@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday & Universal Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Birthday & Universal Timer</h1>
+        
+        <!-- Birthday Input -->
+        <div>
+            <label for="birthday">Set Your Birthday:</label>
+            <input type="date" id="birthday">
+            <button onclick="setBirthday()">Save</button>
+        </div>
+
+        <!-- Universal Timer -->
+        <div id="universalTimer">
+            <h2>Universal Timer</h2>
+            <p>Time since page load: <span id="universalTime">0</span></p>
+        </div>
+
+        <!-- Birthday Countdown -->
+        <div id="birthdayTimer">
+            <h2>Time Until Next Birthday</h2>
+            <p id="birthdayCountdown">Enter your birthday to see the countdown!</p>
+        </div>
+    </div>
+
+    <script>
+        let birthday = null;
+        const startTime = Date.now(); // Universal timer start
+
+        // Save birthday from input
+        function setBirthday() {
+            const input = document.getElementById('birthday').value;
+            if (input) {
+                birthday = new Date(input);
+                localStorage.setItem('birthday', birthday.toISOString()); // Save to local storage
+                alert('Birthday saved!');
+            } else {
+                alert('Please select a valid date!');
+            }
+        }
+
+        // Load saved birthday from local storage
+        if (localStorage.getItem('birthday')) {
+            birthday = new Date(localStorage.getItem('birthday'));
+        }
+
+        // Universal Timer Update
+        function updateUniversalTimer() {
+            const now = Date.now();
+            const elapsed = now - startTime; // Time in milliseconds
+            const microseconds = Math.floor(elapsed * 1000); // Convert to microseconds
+            document.getElementById('universalTime').textContent = formatTime(microseconds);
+        }
+
+        // Birthday Countdown Update
+        function updateBirthdayTimer() {
+            if (!birthday) return;
+
+            const now = new Date();
+            let nextBirthday = new Date(birthday);
+            nextBirthday.setFullYear(now.getFullYear());
+
+            // If birthday has passed this year, set to next year
+            if (nextBirthday < now) {
+                nextBirthday.setFullYear(now.getFullYear() + 1);
+            }
+
+            const timeLeft = nextBirthday - now; // Time in milliseconds
+            const microseconds = Math.floor(timeLeft * 1000); // Convert to microseconds
+            document.getElementById('birthdayCountdown').textContent = formatTime(microseconds);
+        }
+
+        // Format time from microseconds to readable string
+        function formatTime(microseconds) {
+            const seconds = Math.floor(microseconds / 1000000);
+            const remainingMicros = microseconds % 1000000;
+            const days = Math.floor(seconds / (3600 * 24));
+            const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${days}d ${hours}h ${minutes}m ${secs}s ${remainingMicros}µs`;
+        }
+
+        // Update both timers every microsecond (or as close as possible)
+        setInterval(() => {
+            updateUniversalTimer();
+            updateBirthdayTimer();
+        }, 1); // 1ms is the smallest practical interval in browsers
+
+        // Initial update
+        updateUniversalTimer();
+        updateBirthdayTimer();
+    </script>
+</body>
+</html>
